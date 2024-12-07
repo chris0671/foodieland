@@ -8,6 +8,23 @@ from flask_sqlalchemy import SQLAlchemy
 bcrypt = Bcrypt()
 db = SQLAlchemy()
 
+class Follows(db.Model):
+    """Connection of a follower <-> followed_user."""
+
+    __tablename__ = 'follows'
+
+    user_being_followed_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete="cascade"),
+        primary_key=True,
+    )
+
+    user_following_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete="cascade"),
+        primary_key=True,
+    )
+
 class Likes(db.Model):
     """Mapping user likes."""
 
@@ -27,6 +44,50 @@ class Likes(db.Model):
         db.Integer,
         db.ForeignKey('messages.id', ondelete='cascade')
     )
+
+class Comments(db.Model):
+    """Mapping user comments."""
+
+    __tablename__ = 'comments' 
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    text = db.Column(
+        db.String(140),
+        nullable=False,
+    )
+
+    timestamp = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow(),
+    )
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete='cascade')
+    )
+
+    message_id = db.Column(
+        db.Integer,
+        db.ForeignKey('messages.id', ondelete='cascade')
+    )
+
+    def serialize(self):
+
+        return {
+            'id': self.id,
+            'text': self.text,
+            'timestamp': self.timestamp,
+            'message_id': self.message_id,
+            'user_id': self.user_id
+        }    
+        
+    def __repr__(self):
+        return f"{self.id}"
 
 
 class User(db.Model):
